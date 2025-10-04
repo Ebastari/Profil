@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Profil — Tema Hijau Tanaman</title>
+  <style>
+    :root{
+      --green-1:#0b6b3a;
+      --green-2:#1e8b4b;
+      --green-3:#7bd389;
+      --muted:#f3f7f2;
+      --glass: rgba(255,255,255,0.06);
+      --card-shadow: 0 6px 18px rgba(13, 42, 20, 0.18);
+      --radius: 14px;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;background:linear-gradient(180deg,var(--muted),#eaf7ec 60%);color:#07311b}
+
+    /* General Layout */
+    .plant-deco-bg {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 250px; /* Height of the green background section */
+      background: linear-gradient(135deg, var(--green-1), var(--green-2));
+      border-bottom-left-radius: 20px;
+      border-bottom-right-radius: 20px;
+      z-index: -1;
+      overflow: hidden; /* To contain the SVG */
+    }
+
+    .plant-deco-bg svg {
+      position: absolute;
+      bottom: -55px; /* Adjust as needed */
+      right: -30px;
+      width: 200px;
+      height: 200px;
+      opacity: 0.2;
+      transform: rotate(-15deg);
+    }
+
+    .profile-container {
+      max-width: 400px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+      padding: 20px;
+    }
+
+    .profile-header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-avatar {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background-color: var(--green-3); /* Green circle background */
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      cursor: pointer; /* Make it clickable */
+    }
+
+    .profile-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+    }
+
+    .profile-name {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 5px;
+    }
+
+    .profile-role {
+      font-size: 14px;
+      color: #666;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-top: 25px;
+      margin-bottom: 15px;
+      padding-left: 10px;
+    }
+
+    .info-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    /* Style for the non-clickable info item */
+    .info-item {
+      display: flex;
+      align-items: flex-start; /* Align text to top if multiline */
+      background: #f8f8f8;
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+      position: relative;
+    }
+
+    .info-item .icon {
+      margin-right: 15px;
+      color: var(--green-1);
+      font-size: 20px;
+      flex-shrink: 0; /* Prevent icon from shrinking */
+      margin-top: 3px; /* Align icon better with text */
+    }
+
+    .info-item .content {
+      flex-grow: 1;
+      font-size: 15px;
+      color: #333;
+    }
+
+    .info-item .label {
+        font-size: 12px;
+        color: #666;
+        margin-bottom: 2px;
+        display: block;
+    }
+
+    .info-item .value {
+        font-weight: 500;
+        line-height: 1.4;
+    }
+    
+    .info-item .value.empty::before {
+        content: "Belum diisi";
+        color: #999;
+        font-style: italic;
+    }
+
+
+    .actions-bottom {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 30px;
+      padding: 0 10px;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 14px 20px;
+      border-radius: 10px;
+      border: none;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: opacity 0.2s ease;
+      text-decoration: none; /* For anchor tags */
+      color: white; /* For anchor tags */
+    }
+
+    .btn:hover {
+      opacity: 0.9;
+    }
+
+    .btn-edit {
+      background-color: #28a745; /* Green */
+    }
+
+    .btn-logout {
+      background-color: #dc3545; /* Red */
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none; /* Hidden by default */
+      position: fixed; /* Stay in place */
+      z-index: 1000; /* Sit on top */
+      left: 0;
+      top: 0;
+      width: 100%; /* Full width */
+      height: 100%; /* Full height */
+      overflow: auto; /* Enable scroll if needed */
+      background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: #fefefe;
+      margin: auto;
+      padding: 20px;
+      border-radius: var(--radius);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+      width: 90%;
+      max-width: 500px; /* Adjust max-width for the form */
+      position: relative;
+    }
+
+    .close-button {
+      color: #aaa;
+      position: absolute;
+      top: 10px;
+      right: 20px;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .close-button:hover,
+    .close-button:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    /* Form Styles from your provided CSS */
+    .modal-content form {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+    .modal-content label{font-size:13px;color:#0b3a23}
+    .modal-content input[type="text"], 
+    .modal-content input[type="email"], 
+    .modal-content input[type="tel"], 
+    .modal-content textarea{
+      width:100%;padding:10px;border:1px solid rgba(5,40,20,0.08);border-radius:10px;background:white;
+    }
+    .modal-content .row{display:flex;gap:12px}
+    .modal-content .row > *{flex:1}
+
+    .modal-content .actions{display:flex;gap:10px;margin-top:20px;justify-content: flex-end;} /* Align buttons to the right */
+    .modal-content button{padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .modal-content .btn-save{background:linear-gradient(90deg,var(--green-1),var(--green-2));color:white}
+    .modal-content .btn-clear{background:transparent;border:1px solid rgba(5,40,20,0.08)}
+    .modal-content .file-input{display:flex;gap:8px;align-items:center}
+    .modal-content .file-input input[type=file]{display:none}
+    .modal-content .btn-upload{padding:8px 12px;border-radius:10px;background:linear-gradient(90deg,var(--green-2),var(--green-1));color:white;cursor:pointer}
+    .modal-content .small{font-size:12px;color:rgba(3,45,18,0.6)}
+    .modal-content .muted{color:rgba(5,40,20,0.45);font-size:13px}
+    .modal-content .notice{background:linear-gradient(90deg,rgba(16,93,45,0.06),rgba(46,123,59,0.03));padding:10px;border-radius:10px;border:1px solid rgba(6,45,20,0.04)}
+
+    /* Image Modal (for clicking avatar) */
+    .image-modal {
+      display: none;
+      position: fixed;
+      z-index: 2000; /* Higher than edit modal */
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .image-modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+      border-radius: 10px;
+    }
+
+    .image-modal .close-button {
+        color: white; /* White close button for dark background */
+        right: 20px;
+        top: 20px;
+    }
+
+  </style>
+  <!-- Font Awesome for icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+  <div class="plant-deco-bg">
+    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+      <g fill="none" stroke="#ffffff" stroke-width="2">
+        <path d="M30 150 C40 100 80 80 100 60 C120 40 160 40 170 20"/>
+        <path d="M60 160 C70 120 110 100 130 80 C150 60 180 60 190 40"/>
+      </g>
+    </svg>
+  </div>
+
+  <div class="profile-container">
+    <div class="profile-header">
+      <div class="profile-avatar" id="mainAvatarContainer">
+        <img src="https://via.placeholder.com/100" alt="Foto Profil" id="mainAvatarImg">
+      </div>
+      <div class="profile-name" id="displayName">Nama Pengguna</div>
+      <div class="profile-role" id="displayRole">Jabatan Pengguna</div>
+    </div>
+
+    <div class="section-title">Data Pribadi</div>
+    <ul class="info-list">
+      <li class="info-item">
+        <i class="fa-solid fa-user icon"></i>
+        <div class="content">
+            <span class="label">Nama Lengkap</span>
+            <span class="value" id="displayFullName">—</span>
+        </div>
+      </li>
+      <li class="info-item">
+        <i class="fa-solid fa-briefcase icon"></i>
+        <div class="content">
+            <span class="label">Jabatan</span>
+            <span class="value" id="displayPosition">—</span>
+        </div>
+      </li>
+      <li class="info-item">
+        <i class="fa-solid fa-phone icon"></i>
+        <div class="content">
+            <span class="label">Nomor HP</span>
+            <span class="value" id="displayPhone">—</span>
+        </div>
+      </li>
+      <li class="info-item">
+        <i class="fa-solid fa-envelope icon"></i>
+        <div class="content">
+            <span class="label">Email</span>
+            <span class="value" id="displayEmail">—</span>
+        </div>
+      </li>
+      <li class="info-item">
+        <i class="fa-solid fa-location-dot icon"></i>
+        <div class="content">
+            <span class="label">Alamat</span>
+            <span class="value" id="displayAddress">—</span>
+        </div>
+      </li>
+    </ul>
+
+    <div class="actions-bottom">
+      <button class="btn btn-edit" id="editProfileBtn">
+        <i class="fa-solid fa-pen"></i> Edit Profile
+      </button>
+      <a href="logout.html" class="btn btn-logout" id="logoutBtn">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+    </div>
+  </div>
+
+  <!-- Edit Profile Modal -->
+  <div id="editProfileModal" class="modal">
+    <div class="modal-content">
+      <span class="close-button" id="closeEditModal">&times;</span>
+      <h2>Edit Profil Forester</h2>
+      <form id="profileForm" autocomplete="off">
+        <div>
+          <label for="name">Nama</label>
+          <input id="name" name="name" type="text" placeholder="Nama lengkap">
+        </div>
+        <div>
+          <label for="role">Jabatan</label>
+          <input id="role" name="role" type="text" placeholder="Contoh: Manager Operasional">
+        </div>
+        <div class="row">
+          <div>
+            <label for="phone">Nomer HP</label>
+            <input id="phone" name="phone" type="tel" placeholder="08xx-xxxx-xxxx">
+          </div>
+          <div>
+            <label for="email">Alamat email</label>
+            <input id="email" name="email" type="email" placeholder="nama@domain.com">
+          </div>
+        </div>
+
+        <div>
+          <label for="address">Alamat</label>
+          <textarea id="address" name="address" rows="2" placeholder="Alamat lengkap"></textarea>
+        </div>
+
+        <div>
+          <label>Foto profil</label>
+          <div class="file-input">
+            <label class="btn-upload" for="photoInput">Pilih Foto</label>
+            <input id="photoInput" type="file" accept="image/*">
+            <div class="small muted">Ukuran maksimum direkomendasikan: 2MB (akan diubah menjadi data URL).</div>
+          </div>
+        </div>
+
+        <div class="actions">
+          <button type="button" class="btn-save" id="saveBtn">Simpan</button>
+          <button type="button" class="btn-clear" id="clearBtn">Kosongkan</button>
+        </div>
+
+        <div style="margin-top:10px" class="notice">
+          <div class="small">Mohon isi dengan Data yang Benar.</div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Image Viewer Modal -->
+  <div id="imageViewerModal" class="image-modal">
+    <span class="close-button" id="closeImageViewer">&times;</span>
+    <img class="image-modal-content" id="fullSizeAvatar">
+  </div>
+
+
+  <script>
+    // Util function: query selector
+    const $ = sel => document.querySelector(sel);
+
+    // Main Page DOM elements
+    const mainAvatarContainer = $('#mainAvatarContainer');
+    const mainAvatarImg = $('#mainAvatarImg');
+    const displayName = $('#displayName');
+    const displayRole = $('#displayRole');
+    const editProfileBtn = $('#editProfileBtn');
+    const logoutBtn = $('#logoutBtn');
+
+    // Display fields in the main info list
+    const displayFullName = $('#displayFullName');
+    const displayPosition = $('#displayPosition');
+    const displayPhone = $('#displayPhone');
+    const displayEmail = $('#displayEmail');
+    const displayAddress = $('#displayAddress');
+
+
+    // Edit Profile Modal DOM elements
+    const editProfileModal = $('#editProfileModal');
+    const closeEditModal = $('#closeEditModal');
+    const nameInput = $('#name');
+    const roleInput = $('#role');
+    const phoneInput = $('#phone');
+    const emailInput = $('#email');
+    const addressInput = $('#address');
+    const photoInput = $('#photoInput');
+    const saveBtn = $('#saveBtn');
+    const clearBtn = $('#clearBtn');
+
+    // Image Viewer Modal DOM elements
+    const imageViewerModal = $('#imageViewerModal');
+    const closeImageViewer = $('#closeImageViewer');
+    const fullSizeAvatar = $('#fullSizeAvatar');
+
+    const LOCAL_KEY = 'profil_tanaman_v1';
+
+    // --- Functions for Profile Data Management ---
+
+    function loadProfileData() {
+      const raw = localStorage.getItem(LOCAL_KEY);
+      if (!raw) {
+        return {
+          name: "Nama Pengguna",
+          role: "Jabatan Pengguna",
+          phone: "",
+          email: "",
+          address: "",
+          photo: "https://via.placeholder.com/100/28a745/ffffff?text=NP" // Placeholder avatar
+        };
+      }
+      try {
+        const obj = JSON.parse(raw);
+        return {
+          name: obj.name || "Nama Pengguna",
+          role: obj.role || "Jabatan Pengguna",
+          phone: obj.phone || "",
+          email: obj.email || "",
+          address: obj.address || "",
+          photo: obj.photo || "https://via.placeholder.com/100/28a745/ffffff?text=NP"
+        };
+      } catch (e) {
+        console.warn('Gagal parse profil dari localStorage:', e);
+        return {
+          name: "Nama Pengguna",
+          role: "Jabatan Pengguna",
+          phone: "",
+          email: "",
+          address: "",
+          photo: "https://via.placeholder.com/100/28a745/ffffff?text=NP"
+        };
+      }
+    }
+
+    function saveProfileData() {
+      const obj = {
+        name: nameInput.value.trim(),
+        role: roleInput.value.trim(),
+        phone: phoneInput.value.trim(),
+        email: emailInput.value.trim(),
+        address: addressInput.value.trim(),
+        photo: mainAvatarImg.src // Use the current main avatar src
+      };
+      localStorage.setItem(LOCAL_KEY, JSON.stringify(obj));
+      alert('Profil tersimpan di perangkat Anda.');
+      updateDisplayProfile(obj); // Update main page display
+    }
+
+    function clearProfileData() {
+      if (!confirm('Kosongkan semua data profil dari layar dan penyimpanan?')) return;
+      localStorage.removeItem(LOCAL_KEY);
+      // Reset form fields
+      nameInput.value = '';
+      roleInput.value = '';
+      phoneInput.value = '';
+      emailInput.value = '';
+      addressInput.value = '';
+      // Reset main display
+      const defaultProfile = loadProfileData(); // Get default values
+      updateDisplayProfile(defaultProfile);
+      // Close modal after clearing
+      editProfileModal.style.display = 'none';
+    }
+
+    // Update main page display
+    function updateDisplayProfile(profile) {
+      displayName.textContent = profile.name || "Nama Pengguna";
+      displayRole.textContent = profile.role || "Jabatan Pengguna";
+      mainAvatarImg.src = profile.photo || "https://via.placeholder.com/100/28a745/ffffff?text=NP";
+
+      // Update individual info list items
+      displayFullName.textContent = profile.name || "";
+      displayFullName.classList.toggle('empty', !profile.name);
+
+      displayPosition.textContent = profile.role || "";
+      displayPosition.classList.toggle('empty', !profile.role);
+
+      displayPhone.textContent = profile.phone || "";
+      displayPhone.classList.toggle('empty', !profile.phone);
+
+      displayEmail.textContent = profile.email || "";
+      displayEmail.classList.toggle('empty', !profile.email);
+
+      displayAddress.textContent = profile.address || "";
+      displayAddress.classList.toggle('empty', !profile.address);
+    }
+
+    // --- File Handling (from your old script) ---
+
+    function fileToDataURL(file, maxSizeKB = 300) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            let w = img.width,
+              h = img.height;
+            const maxDim = 1024;
+            if (w > maxDim || h > maxDim) {
+              const ratio = Math.min(maxDim / w, maxDim / h);
+              w = Math.round(w * ratio);
+              h = Math.round(h * ratio);
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+            let quality = 0.92;
+            let dataURL = canvas.toDataURL('image/jpeg', quality);
+            while ((dataURL.length / 1024) > maxSizeKB && quality > 0.45) {
+              quality -= 0.07;
+              dataURL = canvas.toDataURL('image/jpeg', quality);
+            }
+            resolve(dataURL);
+          };
+          img.onerror = () => reject(new Error('Gagal memuat gambar'));
+          img.src = reader.result;
+        };
+        reader.onerror = () => reject(new Error('Gagal membaca file'));
+        reader.readAsDataURL(file);
+      });
+    }
+
+    // --- Event Listeners ---
+
+    // Load profile data on page load
+    document.addEventListener('DOMContentLoaded', () => {
+      const currentProfile = loadProfileData();
+      updateDisplayProfile(currentProfile);
+    });
+
+    // Open Edit Profile Modal
+    editProfileBtn.addEventListener('click', () => {
+      const currentProfile = loadProfileData();
+      nameInput.value = currentProfile.name;
+      roleInput.value = currentProfile.role;
+      phoneInput.value = currentProfile.phone;
+      emailInput.value = currentProfile.email;
+      addressInput.value = currentProfile.address;
+      editProfileModal.style.display = 'flex'; // Use flex to center
+    });
+
+    // Close Edit Profile Modal
+    closeEditModal.addEventListener('click', () => {
+      editProfileModal.style.display = 'none';
+    });
+
+    // Close modal if clicked outside
+    window.addEventListener('click', (event) => {
+      if (event.target == editProfileModal) {
+        editProfileModal.style.display = 'none';
+      }
+      if (event.target == imageViewerModal) {
+        imageViewerModal.style.display = 'none';
+      }
+    });
+
+    // Handle photo input change in edit modal
+    photoInput.addEventListener('change', async e => {
+      const f = e.target.files && e.target.files[0];
+      if (!f) return;
+      try {
+        const url = await fileToDataURL(f, 400); // aim ~400KB
+        mainAvatarImg.src = url; // Update main display avatar directly
+      } catch (err) {
+        alert('Gagal memproses gambar: ' + err.message);
+      }
+      photoInput.value = ''; // Reset so same file can be selected again
+    });
+
+    // Save button in edit modal
+    saveBtn.addEventListener('click', () => {
+      saveProfileData();
+      editProfileModal.style.display = 'none'; // Close modal after saving
+    });
+
+    // Clear button in edit modal
+    clearBtn.addEventListener('click', clearProfileData);
+
+    // Open Image Viewer Modal when main avatar is clicked
+    mainAvatarContainer.addEventListener('click', () => {
+      fullSizeAvatar.src = mainAvatarImg.src;
+      imageViewerModal.style.display = 'flex';
+    });
+
+    // Close Image Viewer Modal
+    closeImageViewer.addEventListener('click', () => {
+      imageViewerModal.style.display = 'none';
+    });
+
+  </script>
+</body>
+</html>
